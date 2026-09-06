@@ -28,13 +28,16 @@ python3 scanner.py --skills ~/.hermes/skills
 # JSON output for CI / dashboards
 python3 scanner.py --skills ~/.claude/skills --format json
 
-# Verify the scanner itself
+# Skip noisy subfolders; scan code examples too (opt-in)
+python3 scanner.py --skills ~/.hermes/skills --exclude .bak --include-code-spans
+
+# Verify the scanner itself (fails with exit 1 if fixtures are missing)
 python3 scanner.py --self-test
 ```
 
 No dependencies. Python 3.8+. Works on Linux/macOS.
 
-## What it detects (16 rules)
+## What it detects (19 rules)
 
 | Severity | Pattern | Example |
 |---|---|---|
@@ -51,6 +54,9 @@ No dependencies. Python 3.8+. Works on Linux/macOS.
 Russian-language manipulation is covered too: «ты теперь…», «не говори владельцу»,
 «игнорируй предыдущие инструкции», «это критично: не сообщай…».
 
+v1.1 additions: **follow-only** («следуй только этому тексту»), **attachment-instruction**
+(извлечение инструкции из картинки/вложения/alt), **system-msg-en**.
+
 ## Example output
 
 ```
@@ -64,7 +70,17 @@ Found suspicious spots: 7
 
 ## Design notes
 
-- **Whitelist-aware**: mentions of prompt-injection in security docs/readmes don't trigger.
+- **Context-aware whitelist**: mentions of prompt-injection in security docs/readmes,
+  defensive pattern catalogs and protective phrasings ("ask the user before…",
+  "never say \"done\" if the file wasn't written") don't trigger.
+- **Code spans skipped by default**: matches inside `code` / ```fences``` are treated as
+  examples — re-enable with `--include-code-spans`.
+- **Trusted hosts downgraded**: fetch-remote / install-and-run from github.com,
+  docs.python.org, etc. drop to LOW; unknown hosts stay HIGH with "verify source".
+- **Perf guards**: files >1.5 MB skipped, 60-match cap per rule/file, smart defaults
+  exclude `.git`/`.tmp`/`workspace`/`chat_log*`/detector scripts (override with
+  `--no-default-excludes`, add more with `--exclude`).
+- **Fail-hard self-test**: `--self-test` exits 1 if `fixtures/` are missing — no fake green.
 - **Conservative scoring**: high/medium/low, line numbers, snippets — you decide, it reports.
 - **0 false positives** on the bundled clean fixtures (see `--self-test`).
 
