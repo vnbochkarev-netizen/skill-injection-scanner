@@ -25,8 +25,11 @@ obfuscation, remote-instruction fetches, and manipulation tricks — in **Englis
 ## Install
 
 ```bash
-# npm (any OS with Python 3.8+)
-npx -y @vibo-dev/skill-injection-scanner --skills ~/.openclaw/skills
+# direct (recommended — runs the reviewed source)
+python3 scanner.py --skills ~/.openclaw/skills
+
+# npm — pin the reviewed release (any OS with Python 3.8+)
+npx -y @vibo-dev/skill-injection-scanner@1.1.4 --skills ~/.openclaw/skills
 
 # ClawHub / OpenClaw registry: install "skill-injection-scanner"
 # GitHub: clone this repo

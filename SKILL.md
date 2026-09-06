@@ -1,7 +1,7 @@
 ---
 name: skill-injection-scanner
 description: "Scan agent skill files for hidden instructions and prompt-injection patterns (EN/RU) before a poisoned skill rewrites your agent. 19 rules, zero dependencies. Use ONLY with the user's explicit consent: tell the user which skills folder will be scanned — findings are printed to stdout locally."
-version: 1.1.3
+version: 1.1.4
 tools: [python]
 license: MIT
 ---
