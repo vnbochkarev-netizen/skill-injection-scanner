@@ -1,5 +1,11 @@
 # 🔍 Skill Injection Scanner
 
+[![SkillQA CI](https://github.com/vnbochkarev-netizen/skill-injection-scanner/actions/workflows/skillqa-ci.yml/badge.svg)](https://github.com/vnbochkarev-netizen/skill-injection-scanner/actions/workflows/skillqa-ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![npm](https://img.shields.io/npm/v/@vibo-dev/skill-injection-scanner)](https://www.npmjs.com/package/@vibo-dev/skill-injection-scanner)
+
+<p align="center"><img src="assets/banner.svg" alt="Skill Injection Scanner" width="100%"></p>
+
 **Find hidden instructions and prompt-injection patterns inside your agent's skill files — before they find you.**
 
 Skill marketplaces are booming (ClawHub, n8n, OpenClaw…). So is the dark side:

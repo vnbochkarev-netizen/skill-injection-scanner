@@ -1,0 +1,41 @@
+name: SkillQA
+on:
+  pull_request:
+    paths: ["SKILL.md", "README.md", "*.py", "bin/**", ".github/**"]
+  push:
+    paths: ["SKILL.md", "README.md", "*.py", "bin/**", ".github/**"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  skillqa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with: { python-version: "3.11" }
+      - name: Install SkillQA (from release)
+        run: |
+          curl -fsSL -o /tmp/skillqa.zip \
+            https://github.com/vnbochkarev-netizen/ViBo-SkillQA/releases/download/v0.2.8/vibo-skillqa-0.2.8.zip
+          mkdir -p /tmp/skillqa && cd /tmp/skillqa && unzip -q /tmp/skillqa.zip
+      - name: Install local test license (full grading)
+        run: cd /tmp/skillqa && python3 -c "import skillqa; skillqa.install_test_license()"
+      - name: Run SkillQA
+        id: qa
+        run: |
+          cd /tmp/skillqa && python3 skillqa.py test "$GITHUB_WORKSPACE" \
+            --lang en --skip parallel,sandbox 2>&1 | tee /tmp/qa_out.txt
+      - name: Post grade to PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const out = fs.readFileSync('/tmp/qa_out.txt', 'utf8');
+            const grade = (out.match(/Grade: ([A-D])/) || [])[1] || '?';
+            const body = `## 🤖 ViBo SkillQA: Grade **${grade}**\n` +
+              `_sandbox skipped (CI runner has no unshare)_\n\`\`\`\n${out.slice(0, 3000)}\n\`\`\``;
+            github.rest.issues.createComment({ issue_number: context.issue.number,
+              owner: context.repo.owner, repo: context.repo.repo, body });
