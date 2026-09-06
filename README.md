@@ -16,6 +16,16 @@ obfuscation, remote-instruction fetches, and manipulation tricks — in **Englis
 - Hidden instructions are easy to miss — they hide inside a 2,000-line skill.
 - You probably already have skills you downloaded from the internet. **Scan them.**
 
+## Install
+
+```bash
+# npm (any OS with Python 3.8+)
+npx -y @vibo-dev/skill-injection-scanner --skills ~/.openclaw/skills
+
+# ClawHub / OpenClaw registry: install "skill-injection-scanner"
+# GitHub: clone this repo
+```
+
 ## Quick start
 
 ```bash
