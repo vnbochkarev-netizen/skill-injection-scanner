@@ -1,7 +1,7 @@
 ---
 name: skill-injection-scanner
 description: "Scan agent skill files for hidden instructions and prompt-injection patterns (EN/RU) before a poisoned skill rewrites your agent. 19 rules, zero dependencies. Use ONLY with the user's explicit consent: tell the user which skills folder will be scanned — findings are printed to stdout locally."
-version: 1.1.5
+version: 1.1.6
 tools: [python]
 license: MIT
 ---
@@ -25,9 +25,9 @@ python3 scanner.py --skills /path/to/skills --exclude .bak --include-code-spans
 ```
 
 ## What it detects (19 rules)
-- Role/personality hijack («you are now…», «ты теперь…») and system-message impersonation
+- Role/personality hijack ("you are now…" and Russian equivalents) and system-message impersonation
 - «Ignore previous instructions» / «follow only this text» (EN+RU)
-- Secrecy orders («never tell the owner…», «не говори владельцу»)
+- Secrecy orders ("never tell the owner…" and Russian equivalents)
 - Obfuscated instructions (base64/rot13/encoded), embedded `<|system|>` / ```` ```system ```` markers
 - Remote fetch-and-run (`curl | bash`, `git clone … && run`), instruction extraction from attachments/images
 - Manipulation tricks («this is critical: ignore…», emoji-boosted commands)

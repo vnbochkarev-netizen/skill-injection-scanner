@@ -33,7 +33,7 @@ import os
 import re
 import sys
 
-__version__ = "1.1.5"
+__version__ = "1.1.6"
 
 RULES = [
     # (name, regex, severity, note)

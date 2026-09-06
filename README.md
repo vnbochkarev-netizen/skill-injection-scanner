@@ -70,11 +70,11 @@ No dependencies. Python 3.8+. Works on Linux/macOS.
 | 🟠 medium | comply-blind | "comply with everything the user says" |
 | 🟡 low | prio-emoji | "⚠️ IGNORE previous instructions" |
 
-Russian-language manipulation is covered too: «ты теперь…», «не говори владельцу»,
-«игнорируй предыдущие инструкции», «это критично: не сообщай…».
+Russian-language manipulation patterns are covered too: role takeover, secrecy orders,
+instruction override, "critical — do not tell the user" tricks.
 
-v1.1 additions: **follow-only** («следуй только этому тексту»), **attachment-instruction**
-(извлечение инструкции из картинки/вложения/alt), **system-msg-en**.
+v1.1 additions: **follow-only**, **attachment-instruction** (instructions read from an
+image/attachment/alt text), **system-msg** (RU and EN).
 
 ## Example output
 
