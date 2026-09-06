@@ -33,7 +33,7 @@ import os
 import re
 import sys
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 RULES = [
     # (name, regex, severity, note)
@@ -41,7 +41,7 @@ RULES = [
      "Инструкция объявляет приоритет над системой/правилами агента"),
     ("ignore-previous", re.compile(r"\b(ignore|disregard|forget|overlook|skip)[\s\S]{0,40}(all (the )?)?(previous|prior|earlier|above|system)\b|(игнорируй|забудь|отбрось|не обращай внимания на|не учитывай)[\s\S]{0,40}(все |всё |все )?(предыдущие|прежние|прошлые|выше|старые|системные)", re.I), "high",
      "Прямая команда игнорировать предыдущие инструкции"),
-    ("follow-only", re.compile(r"\b(follow|obey|listen to|comply with) (only|exclusively|solely) (this|the|these)\b|(следуй|подчиняйся|слушайся) (только|исключительно) (этому|этой|этим|указаниям|правилам)", re.I), "high",
+    ("follow-only", re.compile(r"\b(follow|obey|listen to|comply with) (only|exclusively|solely) (this|the|these)\b|(следуй|следуйте|подчиняйся|подчиняйтесь|слушайся|слушайтесь) (только|исключительно) (этому|этой|этим|указаниям|правилам)", re.I), "high",
      "«Следуй только этому тексту» — подмена источника инструкций"),
     ("role-jack", re.compile(r"(you are now|from now on you are|act as|pretend to be|imagine you are|roleplay as|respond as|your new (role|identity)|you are a (different|new))", re.I), "high",
      "Смена роли/личности агента (перехват)"),
@@ -57,7 +57,7 @@ RULES = [
      "Вложенный системный промпт/маркеры чат-формата"),
     ("fetch-remote", re.compile(r"\b(fetch|download|read|curl|wget|request|get|скачай|загрузи|прочитай|получи)\b[\s\S]{0,60}https?://[\s\S]{0,80}\b(instructions?|prompt|rules?|commands?|task|команды|инструкции|указания)\b", re.I), "high",
      "Подтягивание инструкций по внешней ссылке"),
-    ("install-and-run", re.compile(r"\b(curl|wget|pip install|npm install|npx|git clone)[\s\S]{0,60}(https?://|\|)[\s\S]{0,80}\b(run|install|execute|sh|bash|python|node)\b", re.I), "high",
+    ("install-and-run", re.compile(r"\b(curl|wget|pip install|npm install|npx|git clone)[\s\S]{0,60}(https?://|git@|ssh://|\|)[\s\S]{0,80}\b(run|install|execute|sh|bash|python|node)\b", re.I), "high",
      "Команда скачать и выполнить внешний код"),
     ("comply-blind", re.compile(r"\b(comply with|follow|obey|do what)[\s\S]{0,40}(everything|all|any|every)\b", re.I), "medium",
      "Слепое подчинение любым указаниям"),
@@ -65,7 +65,7 @@ RULES = [
      "Указание скрыть действия от владельца/пользователя"),
     ("do-not-say", re.compile(r"\b(start (your )?response with|always start with|begin (your )?(reply|response) with|repeat (the |this )?(phrase|text|sentence|word)|(start|begin|end) (your )?(reply|response|answer|message) (with|by)|reply with (exactly|only)|всегда (начинай|заканчивай)|начни (свой )?(ответ|сообщение) со слова|(ответь|отвечай|напиши) (только|ровно|строго))\b", re.I), "medium",
      "Шаблон-триггер ответа (типичный приём инъекций)"),
-    ("attachment-instruction", re.compile(r"\b(read|extract|parse|decode|scan|analyze|look at) (the |this )?(instructions?|prompt|text|message|rules?|commands?|code) (from|in|out of|inside) (the )?(image|picture|screenshot|photo|attachment|file|document|base64|alt[- ]?text)\b|(прочитай|извлеки|распарси|декодируй|просмотри|проанализируй|изучи) (инструкци|промпт|текст|сообщени|правила|команды|код) (из|в) (вложени|картинк|изображени|скриншот|файл|документ|base64)", re.I), "high",
+    ("attachment-instruction", re.compile(r"\b(read|extract|parse|decode|scan|analyze|look at) (the |this |an |the attached |an attached |attached |embedded )?(instructions?|prompt|text|message|rules?|commands?|code) (from|in|out of|inside) (the |this |an |the attached |an attached |attached |embedded )?(image|picture|screenshot|photo|attachment|file|document|base64|alt[- ]?text)\b|(прочитай|извлеки|распарси|декодируй|просмотри|проанализируй|изучи) (инструкци\w*|промпт\w*|текст\w*|сообщени\w*|правил\w*|команд\w*|код\w*) (из|в|со) (вложени\w*|картинк\w*|изображени\w*|скриншот\w*|файл\w*|документ\w*|base64)", re.I), "high",
      "Извлечение инструкции из вложения/картинки/alt (новый вектор)"),
     ("urgent-secret", re.compile(r"\b(this is (very )?(important|critical|urgent)|(important|critical|secret) (instruction|message|task)|(это|эта) (очень )?(важно|критично|срочно)|(важное|критическое|секретное) (сообщение|указание|задание))[\s\S]{0,60}\b(ignore|disregard|do not|не|игнорируй)\b", re.I), "medium",
      "«Критично, игнорируй…» — манипулятивный приём"),
@@ -112,7 +112,9 @@ PROTECTIVE = re.compile(
 TRUSTED_DOMAINS = (
     "raw.githubusercontent.com", "github.com", "gist.githubusercontent.com",
     "docs.python.org", "developer.mozilla.org", "nodejs.org", "react.dev",
-    "numpy.org", "pypi.org", "docs.docker.com",
+    "numpy.org", "pypi.org", "docs.docker.com", "docs.github.com",
+    "docs.anthropic.com", "docs.openai.com", "docs.npmjs.com",
+    "learn.microsoft.com", "docs.aws.amazon.com", "kubernetes.io",
 )
 _URL_HOST = re.compile(r"https?://([A-Za-z0-9.-]+)", re.I)
 
@@ -125,31 +127,38 @@ def scan_text(text, path_label, include_code_spans=False):
     findings = []
     suppressed = 0
     suppressed_code = 0
-    # позиции всех обратных апострофов — нечётное число ДО матча = внутри код-спана (``` или `)
+    # позиции всех обратных апосторофов. Нечётное число бэктиков СТРОГО ДО матча
+    # (bisect_left: бэктик на позиции самого матча не считается — иначе матч на
+    # открывающем "```" ложно считался бы «внутри кода») = матч внутри код-спана.
+    # Висячий (несбалансированный) последний бэктик не глушит остаток файла.
     ticks = [m.start() for m in re.finditer(r"`", text)]
+    if len(ticks) % 2 == 1:
+        ticks = ticks[:-1]
     for name, rx, severity, note in RULES:
         cnt = 0
         for m in rx.finditer(text):
+            # лимит СНАЧАЛА (дёшево): дорогие window-проверки только для первых 60 сырых матчей
+            if cnt >= MAX_MATCHES_PER_RULE_FILE:
+                suppressed += 1
+                continue
+            cnt += 1
             snippet = m.group(0).replace("\n", " ")[:160]
             window = text[max(0, m.start() - 140):m.end() + 140]
             # легитимные упоминания в доках/оборонительных памятках и защитные формулировки
             if DEFENSIVE_CTX.search(window) or PROTECTIVE.search(window):
                 continue
             # примеры кода в код-спанах (curl|bash, base64 -d и т.п.) — не проза-инструкции
-            if not include_code_spans and ticks and (bisect.bisect_right(ticks, m.start()) % 2 == 1):
+            if not include_code_spans and ticks and (bisect.bisect_left(ticks, m.start()) % 2 == 1):
                 suppressed_code += 1
                 continue
-            if cnt >= MAX_MATCHES_PER_RULE_FILE:
-                suppressed += 1
-                continue
-            cnt += 1
             sev = severity
             note_out = note
             if name in ("fetch-remote", "install-and-run"):
                 mh = _URL_HOST.search(snippet)
                 host = mh.group(1).lower() if mh else ""
-                trusted = bool(host) and (host.startswith("docs.")
-                                          or any(host == d or host.endswith("." + d) for d in TRUSTED_DOMAINS))
+                # доверие ТОЛЬКО по известным доменам (и их поддоменам) —
+                # префикс "docs.*" НЕ доверяем (docs.evil.example.com — ловушка)
+                trusted = bool(host) and any(host == d or host.endswith("." + d) for d in TRUSTED_DOMAINS)
                 if trusted:
                     sev = "low"
                     note_out = note + " (доверенный источник)"
@@ -183,7 +192,7 @@ def collect_files(root, exclude_extra=(), use_default_excludes=True):
             dirnames[:] = kept
         for name in names:
             low = name.lower()
-            if low.startswith("chat_log") or low.endswith(".log"):
+            if use_default_excludes and (low.startswith("chat_log") or low.endswith(".log")):
                 skipped["name"] += 1
                 continue
             if not low.endswith((".md", ".txt", ".py", ".sh", ".json", ".yaml", ".yml")):
@@ -191,7 +200,7 @@ def collect_files(root, exclude_extra=(), use_default_excludes=True):
                 continue
             # инструментальные скрипты самих детекторов (scan_poison.py, audit.py и т.п.) —
             # их regex-правила описывают атаки и дают self-reference FP
-            if low.endswith((".py", ".sh")) and re.search(r"(scan|audit|poison|detect|guard|monitor|verify|selftest)", name.lower()):
+            if use_default_excludes and low.endswith((".py", ".sh")) and re.search(r"(scan|audit|poison|detect|guard|monitor|verify|selftest)", name.lower()):
                 skipped["name"] += 1
                 continue
             path = os.path.join(dirpath, name)
