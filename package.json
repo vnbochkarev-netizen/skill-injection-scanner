@@ -1,6 +1,6 @@
 {
   "name": "@vibo-dev/skill-injection-scanner",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Find hidden instructions and prompt-injection patterns inside agent skill files (EN/RU, 19 rules). Local-first, zero dependencies, Python 3.8+.",
   "license": "MIT",
   "author": "Viacheslav Bochkarev <vnbochkarev@gmail.com>",
