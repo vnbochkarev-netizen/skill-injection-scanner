@@ -31,9 +31,10 @@ import bisect
 import json
 import os
 import re
+import stat
 import sys
 
-__version__ = "1.1.6"
+__version__ = "1.1.7"
 
 RULES = [
     # (name, regex, severity, note)
@@ -171,11 +172,25 @@ def scan_text(text, path_label, include_code_spans=False):
 
 
 def scan_file(path, max_file_mb=1.5, include_code_spans=False):
+    # 15.09.2026 (аудит ClawHub, находка T05): по симлинкам не идём и читаем только
+    # regular-файлы. O_NOFOLLOW закрывает окно между проверкой и открытием, fstat — подмену.
     try:
+        if os.path.islink(path):
+            return [], 0, 0, False
         if os.path.getsize(path) > max_file_mb * 1024 * 1024:
             return [], 0, 0, True  # too big (logs/caches) — skipped
-        with open(path, "r", encoding="utf-8", errors="replace") as fh:
-            text = fh.read()
+        fd = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+        try:
+            if not stat.S_ISREG(os.fstat(fd).st_mode):
+                return [], 0, 0, False
+            with os.fdopen(fd, "r", encoding="utf-8", errors="replace") as fh:
+                text = fh.read()
+        except Exception:
+            try:
+                os.close(fd)
+            except OSError:
+                pass
+            raise
     except OSError:
         return [], 0, 0, False
     findings, sup, code = scan_text(text, path, include_code_spans)
@@ -184,7 +199,8 @@ def scan_file(path, max_file_mb=1.5, include_code_spans=False):
 
 def collect_files(root, exclude_extra=(), use_default_excludes=True):
     files = []
-    skipped = {"dir": 0, "name": 0, "user": 0, "ext": 0}
+    skipped = {"dir": 0, "name": 0, "user": 0, "ext": 0, "link": 0}
+    real_root = os.path.realpath(root)
     for dirpath, dirnames, names in os.walk(root):
         if use_default_excludes:
             kept = [d for d in dirnames if d not in DEFAULT_EXCLUDE_DIRS]
@@ -206,6 +222,18 @@ def collect_files(root, exclude_extra=(), use_default_excludes=True):
             path = os.path.join(dirpath, name)
             if any(x in path for x in exclude_extra):
                 skipped["user"] += 1
+                continue
+            # 15.09.2026 (аудит ClawHub, находка T05): симлинк или путь вне разрешённого
+            # каталога — не читаем и не печатаем его содержимое; считаем и сообщаем в отчёте.
+            if os.path.islink(path):
+                skipped["link"] += 1
+                continue
+            try:
+                contained = os.path.commonpath([real_root, os.path.realpath(path)]) == real_root
+            except ValueError:
+                contained = False
+            if not contained:
+                skipped["link"] += 1
                 continue
             files.append(path)
     return files, skipped
@@ -302,6 +330,7 @@ def main():
     print(f"🔍 Scanned files: {len(files)} (skill-injection-scanner v{__version__})")
     print(f"   skipped: {skipped['dir']} dirs, {skipped['name']} logs/chat_log, "
           f"{skipped['ext']} non-target files, {skipped['user']} by --exclude, "
+          f"{skipped.get('link', 0)} symlinks/out-of-root, "
           f"{big_skipped} big (> {args.max_file_mb:g} MB)")
     print(f"Suspicious spots found: {len(all_findings)} "
           f"(high {by_severity['high']} / medium {by_severity['medium']} / low {by_severity['low']})")

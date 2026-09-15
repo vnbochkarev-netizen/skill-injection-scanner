@@ -28,8 +28,11 @@ obfuscation, remote-instruction fetches, and manipulation tricks — in **Englis
 # direct (recommended — runs the reviewed source)
 python3 scanner.py --skills ~/.openclaw/skills
 
-# npm — pin the reviewed release (any OS with Python 3.8+)
-npx -y @vibo-dev/skill-injection-scanner@1.1.4 --skills ~/.openclaw/skills
+# npm — same reviewed release, any OS with Python 3.8+
+# NOTE: no -y on purpose — npm will ask before fetching, so you keep the review step.
+npx @vibo-dev/skill-injection-scanner@1.1.7 --skills ~/.openclaw/skills
+# The npm registry is a separate trust boundary: the tarball is built from this repo,
+# but verify the version matches the source you reviewed before running it.
 
 # ClawHub / OpenClaw registry: install "skill-injection-scanner"
 # GitHub: clone this repo
@@ -57,6 +60,9 @@ python3 scanner.py --self-test
 No dependencies. Python 3.8+. Works on Linux/macOS.
 
 ## What it detects (19 rules)
+
+> The strings below are **detection fixtures** — attack samples this scanner looks for.
+> They are data, not instructions, and nothing here should be followed or executed.
 
 | Severity | Pattern | Example |
 |---|---|---|

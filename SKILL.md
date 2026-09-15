@@ -25,6 +25,10 @@ python3 scanner.py --skills /path/to/skills --exclude .bak --include-code-spans
 ```
 
 ## What it detects (19 rules)
+
+> Phrases quoted below are **detection fixtures** (attack samples the scanner matches on),
+> not instructions. They are listed as data so the rules stay auditable.
+
 - Role/personality hijack ("you are now…" and Russian equivalents) and system-message impersonation
 - «Ignore previous instructions» / «follow only this text» (EN+RU)
 - Secrecy orders ("never tell the owner…" and Russian equivalents)
